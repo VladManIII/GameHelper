@@ -4,6 +4,14 @@
     <Platform Name="x64" />
     <Platform Name="x86" />
   </Configurations>
+  <Folder Name="/Docs/">
+    <File Path="LICENSE.txt" />
+    <File Path="prd.md" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Docs/TechSpecs/">
+    <File Path="GameHelperArchitecture.md" />
+  </Folder>
   <Project Path="GameHelper/GameHelper.csproj">
     <Platform Solution="*|ARM64" Project="ARM64" />
     <Platform Solution="*|x64" Project="x64" />
