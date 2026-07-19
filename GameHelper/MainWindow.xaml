@@ -6,6 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="using:GameHelper"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:models="using:GameHelper.Models"
     xmlns:pages="using:GameHelper.Pages"
     Title="Game Helper"
     mc:Ignorable="d">
@@ -14,7 +15,90 @@
         <MicaBackdrop />
     </pages:BaseWindow.SystemBackdrop>
 
-    <Grid HorizontalAlignment="Center" VerticalAlignment="Center">
-        <TextBlock FontSize="24" Text="{x:Bind VievModel.Status}" />
-    </Grid>
+    <NavigationView
+        x:Name="nvMain"
+        IsBackButtonVisible="Collapsed"
+        IsSettingsVisible="True"
+        SelectionChanged="nvMain_SelectionChanged">
+        <NavigationView.MenuItems>
+            <NavigationViewItem
+                Content="Games"
+                Icon="AllApps"
+                IsSelected="True"
+                Tag="Games" />
+        </NavigationView.MenuItems>
+
+        <Grid Padding="16">
+            <Grid x:Name="gamesPanel" Visibility="Visible">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="220" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0" Spacing="8">
+                    <TextBlock
+                        FontSize="18"
+                        FontWeight="SemiBold"
+                        Text="Games" />
+                    <ListView
+                        DisplayMemberPath="Name"
+                        ItemsSource="{x:Bind VievModel.Games}"
+                        SelectedItem="{x:Bind VievModel.SelectedGame, Mode=TwoWay}" />
+                </StackPanel>
+
+                <StackPanel
+                    Grid.Column="1"
+                    Margin="24,0,0,0"
+                    HorizontalAlignment="Stretch"
+                    Orientation="Vertical"
+                    Spacing="8">
+                    <StackPanel
+                        HorizontalAlignment="Stretch"
+                        Orientation="Horizontal"
+                        Spacing="15">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="18"
+                            FontWeight="SemiBold"
+                            Text="{x:Bind VievModel.SelectedGame.Name, Mode=OneWay}" />
+
+                        <ToggleSwitch
+                            VerticalAlignment="Center"
+                            FontSize="18"
+                            FontWeight="SemiBold"
+                            IsOn="{x:Bind VievModel.SelectedGame.isActive, Mode=TwoWay}" />
+                    </StackPanel>
+
+                    <ListView ItemsSource="{x:Bind VievModel.SelectedGame.Macros, Mode=OneWay}">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="models:Macro">
+                                <StackPanel Orientation="Horizontal" Spacing="12">
+                                    <TextBlock Opacity="0.7" Text="{x:Bind KeyBind}" />
+
+                                    <TextBlock Width="160" Text="{x:Bind Macros}" />
+
+                                    <TextBlock Width="160" Text="{x:Bind Name}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </StackPanel>
+            </Grid>
+
+            <StackPanel
+                x:Name="settingsPanel"
+                Spacing="12"
+                Visibility="Collapsed">
+                <TextBlock
+                    FontSize="18"
+                    FontWeight="SemiBold"
+                    Text="Settings" />
+
+                <ToggleSwitch Header="Run on startup" IsOn="{x:Bind VievModel.RunOnStartup, Mode=TwoWay}" />
+
+                <ToggleSwitch Header="Enable key hooks Global" IsOn="{x:Bind VievModel.KeyHooksEnabled, Mode=TwoWay}" />
+            </StackPanel>
+        </Grid>
+    </NavigationView>
+
 </pages:BaseWindow>
