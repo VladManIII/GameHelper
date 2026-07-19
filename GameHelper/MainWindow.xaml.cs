@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using GameHelper.Models;
 using GameHelper.Pages;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -9,6 +10,7 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -35,14 +37,54 @@ public sealed partial class MainWindow : BaseWindow
     }
 
     public override IViewModelLifecycle? GetViewModel() => VievModel;
+
+    private void nvMain_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
+    {
+        settingsPanel.Visibility = args.IsSettingsSelected ? Visibility.Visible : Visibility.Collapsed;
+        gamesPanel.Visibility = args.IsSettingsSelected ? Visibility.Collapsed : Visibility.Visible;
+    }
 }
 
 public partial class MainViewModel : BaseViewModel
 {
-    public MainViewModel() { }
+    public ObservableCollection<Game> Games { get; } = new()
+    {
+        new Game
+        {
+            Name = "PUBG",
+            Macros = new ObservableCollection<Macro>
+            {
+                new Macro { Name = "Window Jump", KeyBind = "Space", Macros="Space+C" },
+            },
+        },
+        new Game
+        {
+            Name = "Rust",
+            Macros = new ObservableCollection<Macro>
+            {
+                new Macro { Name = "Home TP", KeyBind = "NumPad1", Macros="/home 1" },
+                new Macro { Name = "Accept TP", KeyBind = "NumPad2", Macros="/tpa" },
+                new Macro { Name = "Cancel TP", KeyBind = "NumPad3", Macros="/tpc" },
+            },
+        },
+    };
+
+    [ObservableProperty]
+    public partial Game? SelectedGame { get; set; }
+
+    [ObservableProperty]
+    public partial bool RunOnStartup { get; set; }
+
+    [ObservableProperty]
+    public partial bool KeyHooksEnabled { get; set; } = true;
 
     [ObservableProperty]
     public partial string Status {  get; set; }
+
+    public MainViewModel()
+    {
+        SelectedGame = Games.FirstOrDefault();
+    }
 
     protected override void OnActivated()
     {
