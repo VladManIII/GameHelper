@@ -25,8 +25,6 @@ internal class MouseHookController : IMouseHookController
 
     #endregion
 
-    //private static readonly object _syncObj = new object();
-
     private delegate IntPtr LowLevelMouseProc(int nCode, IntPtr wParam, IntPtr lParam);
 
     private IntPtr _hookId = IntPtr.Zero;
@@ -42,7 +40,6 @@ internal class MouseHookController : IMouseHookController
     }
 
     private MouseHookController() { }
-    //~MouseHookController() => Dispose();
 
     //--------------------------------------------------------------------------------------------------
 
@@ -90,7 +87,6 @@ internal class MouseHookController : IMouseHookController
         if (nCode < 0) return CallNextHookEx(_hookId, nCode, wParam, lParam);
 
         var mhs = (MSLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(MSLLHOOKSTRUCT));
-        //Debug.WriteLine($"[pt = ({mhs.pt.X} / {mhs.pt.Y}), mouseData = {mhs.mouseData}, flags = {mhs.flags}, time = {mhs.time}, extraInfo = {mhs.dwExtraInfo}");
 
         if (wParam == LeftDownParam)
             return OnKeyChanged(new MouseValue(new Point(mhs.pt.X, mhs.pt.Y), (int)mhs.mouseData), MouseAction.LeftDown, nCode, wParam, lParam);

@@ -28,8 +28,6 @@ internal class KeyboardController : IKeyboardController
     [DllImport("user32.dll")]
     public static extern IntPtr GetKeyboardLayout(uint thread);
 
-    //[DllImport("user32.dll")] static extern uint GetWindowThreadProcessId(IntPtr hwnd, IntPtr proccess);
-
     #endregion
 
     public static KeyboardController Instance => Sync.Instance;
@@ -167,9 +165,6 @@ internal class KeyboardController : IKeyboardController
     {
         try
         {
-            //IntPtr foregroundWindow = GetForegroundWindow();
-            //uint foregroundProcess = GetWindowThreadProcessId(foregroundWindow, IntPtr.Zero);
-            //int keyboardLayout = GetKeyboardLayout(foregroundProcess).ToInt32() & 0xFFFF;
             int keyboardLayout = GetKeyboardLayout(0).ToInt32() & 0xFFFF;
             return new CultureInfo(keyboardLayout);
         }
