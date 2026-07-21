@@ -11,7 +11,7 @@ internal class KeyboardController : IKeyboardController
     #region Microsoft Imports
 
     [DllImport("user32.dll")]
-    private static extern void keybd_event(byte bVk, byte bScan, UInt32 dwFlags, uint dwExtraInfo);
+    private static extern void keybd_event(byte bVk, byte bScan, UInt32 dwFlags, UIntPtr dwExtraInfo);
 
     [DllImport("user32.dll", CharSet = CharSet.Auto, CallingConvention = CallingConvention.StdCall)]
     private static extern short GetKeyState(int keyCode);
@@ -60,18 +60,18 @@ internal class KeyboardController : IKeyboardController
     //--------------------------------------------------------------------------------------------------------
     public void DownKey(byte key)
     {
-        keybd_event(key, 0x45, VirtualKeyCodes.KeyEvent | 0, 0);
+        keybd_event(key, 0, VirtualKeyCodes.KeyEventDown, UIntPtr.Zero);
     }
 
     public void UpKey(byte key)
     {
-        keybd_event(key, 0x45, VirtualKeyCodes.KeyEvent | VirtualKeyCodes.KeyEventUp, 0);
+        keybd_event(key, 0, VirtualKeyCodes.KeyEventUp, UIntPtr.Zero);
     }
 
     public void PressKey(byte key)
     {
-        keybd_event(key, 0x45, VirtualKeyCodes.KeyEvent | 0, 0);
-        keybd_event(key, 0x45, VirtualKeyCodes.KeyEvent | VirtualKeyCodes.KeyEventUp, 0);
+        keybd_event(key, 0, VirtualKeyCodes.KeyEventDown, UIntPtr.Zero);
+        keybd_event(key, 0, VirtualKeyCodes.KeyEventUp, UIntPtr.Zero);
     }
 
     public void DownKey(Keys key)
@@ -91,7 +91,7 @@ internal class KeyboardController : IKeyboardController
 
     public void PressKey(SpecialChar sp)
     {
-        if (sp == null) return;
+        if (sp == null || sp.Key == Keys.None) return;
 
         if (sp.IsShift) DownKey(Keys.ShiftKey);
         if (sp.IsControl) DownKey(Keys.ControlKey);
@@ -106,21 +106,18 @@ internal class KeyboardController : IKeyboardController
 
     public void DownKey(SpecialChar sp)
     {
-        if (sp == null) return;
+        if (sp == null || sp.Key == Keys.None) return;
 
         if (sp.IsShift) DownKey(Keys.ShiftKey);
-        if (sp.IsControl) UpKey(Keys.ControlKey);
-        if (sp.IsAlt) UpKey(Keys.LMenu);
-        //if (sp.IsShift) DownKey(Keys.ShiftKey);
-        //if (sp.IsControl) DownKey(Keys.ControlKey);
-        //if (sp.IsAlt) DownKey(Keys.LMenu);
+        if (sp.IsControl) DownKey(Keys.ControlKey);
+        if (sp.IsAlt) DownKey(Keys.LMenu);
 
         DownKey(sp.Key);
     }
 
     public void UpKey(SpecialChar sp)
     {
-        if (sp == null) return;
+        if (sp == null || sp.Key == Keys.None) return;
 
         UpKey(sp.Key);
 

@@ -16,7 +16,7 @@ internal static class KeysEventEmulation
         if (iscaps)
             KeyboardController.Instance.PressKey(Keys.CapsLock);
 
-        if (KeyboardController.Instance.IsAlt)
+        if (KeyboardController.Instance.IsAlt && sequence.Length > 0)
             sequence = sequence[0] + sequence;
         KeyboardController.Instance.ReleaseModifiers();
 
@@ -34,15 +34,20 @@ internal static class KeysEventEmulation
 
     public static void ExecuteKey(char value)
     {
-        if (char.IsLetterOrDigit(value))
-            ExecureLetterOrDigit(value);
+        if (IsAsciiLetterOrDigit(value))
+            ExecuteAsciiLetterOrDigit(value);
         else
             KeyboardController.Instance.PressKey(value.ToSpecialChar());
     }
 
-    private static void ExecureLetterOrDigit(char value)
-    {
+    // VK codes for '0'-'9'/'A'-'Z' match their ASCII values, so this fast path only
+    // holds for ASCII input; anything else must go through VkKeyScan (ToSpecialChar)
+    // to resolve the correct key for the active keyboard layout.
+    private static bool IsAsciiLetterOrDigit(char value) =>
+        (value >= '0' && value <= '9') || (value >= 'A' && value <= 'Z') || (value >= 'a' && value <= 'z');
 
+    private static void ExecuteAsciiLetterOrDigit(char value)
+    {
         bool upperCase = char.IsUpper(value);
 
         if (upperCase)

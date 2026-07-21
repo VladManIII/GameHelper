@@ -62,6 +62,11 @@ public class KeyboardHookController : IKeyboardHookController
             _callback = hookCallback;
             _hookProc = new LowLevelKeyboardProc(HookCallback);
             _hookId = SetWindowsHookEx(VirtualKeyCodes.WH_KEYBOARD_LL, _hookProc, GetModuleHandle(curModule.ModuleName), 0);
+            if (_hookId == IntPtr.Zero)
+            {
+                int error = Marshal.GetLastWin32Error();
+                throw new InvalidOperationException($"Failed to install low-level keyboard hook (Win32 error {error}).");
+            }
             return _hookId;
         }
     }
@@ -90,7 +95,7 @@ public class KeyboardHookController : IKeyboardHookController
         else if (key == Keys.LControlKey || key == Keys.RControlKey) KeyboardController.Instance.IsControl = state == KeysState.Down ? true : false;
         else if (key == Keys.LMenu || key == Keys.RMenu) KeyboardController.Instance.IsAlt = state == KeysState.Down ? true : false;
 
-        key = key.FormatWithModifyers();
+        key = key.FormatWithModifiers();
 
         KeyChanged?.Invoke(key, state);
         if (_callback == null) return CallNextHookEx(_hookId, nCode, wParam, lParam);
@@ -115,5 +120,6 @@ public class KeyboardHookController : IKeyboardHookController
     public void Dispose()
     {
         ClearAll();
+        KeyChanged = null;
     }
 }

@@ -9,9 +9,10 @@ public class KeyCommand : IKeyCommand
         Key = key;
         try
         {
-            KeysKey = string.IsNullOrEmpty(key) ? Keys.None : (Keys)new KeysConverter().ConvertFrom(Key);
+            var converted = string.IsNullOrEmpty(key) ? null : new KeysConverter().ConvertFrom(Key);
+            KeysKey = converted is Keys keys ? keys : Keys.None;
         }
-        catch (Exception ex) { KeysKey = Keys.None; }
+        catch { KeysKey = Keys.None; }
         Value = value;
     }
 

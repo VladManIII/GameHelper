@@ -22,7 +22,6 @@ internal static class VirtualKeyCodes
 
     #region Keyboard
 
-    public const int KeyEvent = 0x0001;
     public const int KeyEventDown = 0;
     public const int KeyEventUp = 0x0002;
 

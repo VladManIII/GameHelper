@@ -39,7 +39,7 @@ internal class MouseController : IMouseController
         uint X = (uint)Cursor.Position.X;
         uint Y = (uint)Cursor.Position.Y;
 
-        mouse_event(VirtualKeyCodes.MOUSEEVENTF_LEFTDOWN | VirtualKeyCodes.MOUSEEVENTF_LEFTUP, X, Y, 0, 0);
+        mouse_event(VirtualKeyCodes.MOUSEEVENTF_LEFTUP, X, Y, 0, 0);
     }
 
     public void PressLeftKey()
@@ -48,7 +48,7 @@ internal class MouseController : IMouseController
         uint Y = (uint)Cursor.Position.Y;
 
         mouse_event(VirtualKeyCodes.MOUSEEVENTF_LEFTDOWN | 0, X, Y, 0, 0);
-        mouse_event(VirtualKeyCodes.MOUSEEVENTF_LEFTDOWN | VirtualKeyCodes.MOUSEEVENTF_LEFTUP, X, Y, 0, 0);
+        mouse_event(VirtualKeyCodes.MOUSEEVENTF_LEFTUP, X, Y, 0, 0);
     }
 
     public void PressLeftKey(int x, int y)
@@ -71,7 +71,7 @@ internal class MouseController : IMouseController
         uint X = (uint)Cursor.Position.X;
         uint Y = (uint)Cursor.Position.Y;
 
-        mouse_event(VirtualKeyCodes.MOUSEEVENTF_RIGHTDOWN | VirtualKeyCodes.MOUSEEVENTF_RIGHTUP, X, Y, 0, 0);
+        mouse_event(VirtualKeyCodes.MOUSEEVENTF_RIGHTUP, X, Y, 0, 0);
     }
 
     public void PressRightKey()
@@ -80,7 +80,7 @@ internal class MouseController : IMouseController
         uint Y = (uint)Cursor.Position.Y;
 
         mouse_event(VirtualKeyCodes.MOUSEEVENTF_RIGHTDOWN | 0, X, Y, 0, 0);
-        mouse_event(VirtualKeyCodes.MOUSEEVENTF_RIGHTDOWN | VirtualKeyCodes.MOUSEEVENTF_RIGHTUP, X, Y, 0, 0);
+        mouse_event(VirtualKeyCodes.MOUSEEVENTF_RIGHTUP, X, Y, 0, 0);
     }
 
     public void PressRightKey(int x, int y)

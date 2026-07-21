@@ -62,12 +62,18 @@ internal class MouseHookController : IMouseHookController
     // if hookCallback return true then do nothing if false send pressed key to system
     public IntPtr SetHook(Func<MouseValue, MouseAction, bool> hookCallback)
     {
+        ClearAll();
         using (Process curProcess = Process.GetCurrentProcess())
         using (ProcessModule curModule = curProcess.MainModule)
         {
             _callback = hookCallback;
             _hookProc = new LowLevelMouseProc(HookCallback);
             _hookId = SetWindowsHookEx(VirtualKeyCodes.WH_MOUSE_LL, _hookProc, GetModuleHandle(curModule.ModuleName), 0);
+            if (_hookId == IntPtr.Zero)
+            {
+                int error = Marshal.GetLastWin32Error();
+                throw new InvalidOperationException($"Failed to install low-level mouse hook (Win32 error {error}).");
+            }
             return _hookId;
         }
     }
@@ -127,6 +133,7 @@ internal class MouseHookController : IMouseHookController
     public void Dispose()
     {
         ClearAll();
+        KeyChanged = null;
     }
 
     //-------------------------------------------------------------------------------------------------
