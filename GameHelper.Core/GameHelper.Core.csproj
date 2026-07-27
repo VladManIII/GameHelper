@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Pure-C# MVVM building blocks (Models, Services, base view-model lifecycle) with no
+    WinUI/MSIX dependency, so they can be unit tested and referenced without the packaging
+    baggage that GameHelper.csproj carries (UseWinUI/EnableMsixTooling force a Platform
+    other than AnyCPU and pull in Windows App SDK bootstrap code that can't run outside a
+    packaged app host).
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0-windows10.0.26100.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>GameHelper</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="LiteDB" Version="5.0.21" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\HookLib\HookLib.csproj" />
+  </ItemGroup>
+
+</Project>

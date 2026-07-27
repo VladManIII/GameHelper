@@ -8,6 +8,7 @@ public partial class Game : ObservableObject
     [ObservableProperty]
     public partial string Name { get; set; } = string.Empty;
 
-    public bool isActive { get; set; } = true;
+    [ObservableProperty]
+    public partial bool IsActive { get; set; } = true;
     public ObservableCollection<Macro> Macros { get; set; } = new();
 }

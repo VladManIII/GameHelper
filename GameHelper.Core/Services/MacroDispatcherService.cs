@@ -23,9 +23,9 @@ public class MacroDispatcherService
     // (KeyBind rebind capture keeps working, since it listens on the same hook independently).
     public bool IsPaused { get; set; }
 
-    public MacroDispatcherService(ObservableCollection<Game> games)
+    public MacroDispatcherService(GameLibraryService gameLibrary)
     {
-        _games = games;
+        _games = gameLibrary.Games;
     }
 
     public void Start()
@@ -55,7 +55,7 @@ public class MacroDispatcherService
     {
         foreach (var game in _games)
         {
-            if (!game.isActive) continue;
+            if (!game.IsActive) continue;
 
             foreach (var macro in game.Macros)
             {
@@ -79,7 +79,7 @@ public class MacroDispatcherService
         {
             try
             {
-                new KeyCommand(string.Empty, macro.Macros).Execute(cts.Token);
+                new KeyCommand(string.Empty, macro.Sequence).Execute(cts.Token);
             }
             finally
             {
