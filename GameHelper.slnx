@@ -19,4 +19,6 @@
     <Deploy />
   </Project>
   <Project Path="HookLib/HookLib.csproj" Id="ddd1012d-14ff-4955-ac7d-aad14ceb2d24" />
+  <Project Path="GameHelper.Core/GameHelper.Core.csproj" />
+  <Project Path="GameHelper.Tests/GameHelper.Tests.csproj" />
 </Solution>

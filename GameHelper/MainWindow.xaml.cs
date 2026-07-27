@@ -1,9 +1,7 @@
 using System;
-using System.Linq;
-using System.Windows.Forms;
 using System.Collections.ObjectModel;
+using System.Linq;
 
-using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
 using CommunityToolkit.Mvvm.Input;
@@ -12,91 +10,60 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using GameHelper.Pages;
 using GameHelper.Models;
 using GameHelper.Services;
+using GameHelper.Services.Persistence;
+using GameHelper.Views;
 
 namespace GameHelper;
 
-/// <summary>
-/// An empty window that can be used on its own or navigated to within a Frame.
-/// </summary>
 public sealed partial class MainWindow : BaseWindow
 {
-    public MainViewModel VievModel { get; set; } = new();
+    public MainViewModel VievModel { get; }
 
-    public MainWindow()
+    public MainWindow(MainViewModel viewModel)
     {
-        InitializeComponent();
+        VievModel = viewModel;
 
+        InitializeComponent();
         AppWindow.Resize(new Windows.Graphics.SizeInt32(850, 500));
+
+        contentFrame.Navigate(typeof(GamesPage), VievModel);
     }
 
     public override IViewModelLifecycle? GetViewModel() => VievModel;
 
     private void nvMain_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
     {
-        settingsPanel.Visibility = args.IsSettingsSelected ? Visibility.Visible : Visibility.Collapsed;
-        gamesPanel.Visibility = args.IsSettingsSelected ? Visibility.Collapsed : Visibility.Visible;
-    }
-
-    private void MacroField_GotFocus(object sender, RoutedEventArgs e) => VievModel.BeginFieldEdit();
-
-    private void MacroField_LostFocus(object sender, RoutedEventArgs e) => VievModel.EndFieldEdit();
-
-    private void DeleteMacro_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is FrameworkElement { DataContext: Macro macro })
-            VievModel.SelectedGame?.Macros.Remove(macro);
-    }
-
-    private void DeleteGame_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is FrameworkElement { DataContext: Game game })
-            VievModel.DeleteGame(game);
+        contentFrame.Navigate(args.IsSettingsSelected ? typeof(SettingsPage) : typeof(GamesPage), VievModel);
     }
 }
 
 public partial class MainViewModel : BaseViewModel
 {
-    public ObservableCollection<Game> Games { get; } = new()
-    {
-        new Game
-        {
-            Name = "PUBG",
-            Macros = new ObservableCollection<Macro>
-            {
-                new Macro { Name = "Window Jump", KeyBind = new KeyBind(Keys.Space), Macros=" c" },
-            },
-        },
-        new Game
-        {
-            Name = "Rust",
-            Macros = new ObservableCollection<Macro>
-            {
-                new Macro { Name = "Home TP", KeyBind = new KeyBind(Keys.NumPad1), Macros="t /home 1" },
-                new Macro { Name = "Accept TP", KeyBind = new KeyBind(Keys.NumPad2), Macros="t /tpa" },
-                new Macro { Name = "Cancel TP", KeyBind = new KeyBind(Keys.NumPad3), Macros="t /tpc" },
-            },
-        },
-    };
+    public ObservableCollection<Game> Games { get; }
 
-    [ObservableProperty]
-    public partial Game? SelectedGame { get; set; }
+    [ObservableProperty] public partial Game? SelectedGame { get; set; }
+    [ObservableProperty] public partial bool RunOnStartup { get; set; }
+    [ObservableProperty] public partial bool KeyHooksEnabled { get; set; } = true;
+    [ObservableProperty] public partial string Status { get; set; } = "Idle";
 
-    [ObservableProperty]
-    public partial bool RunOnStartup { get; set; }
-
-    [ObservableProperty]
-    public partial bool KeyHooksEnabled { get; set; } = true;
-
-    [ObservableProperty]
-    public partial string Status {  get; set; }
-
+    private readonly GameLibraryService _gameLibrary;
     private readonly MacroDispatcherService _macroDispatcher;
+    private readonly PersistenceService _persistence;
     private int _fieldEditCount;
+    private bool _hasActivatedOnce;
 
-    public MainViewModel()
+    public MainViewModel(GameLibraryService gameLibrary, MacroDispatcherService macroDispatcher, PersistenceService persistence)
     {
+        _gameLibrary = gameLibrary;
+        _macroDispatcher = macroDispatcher;
+        _persistence = persistence;
+
+        Games = gameLibrary.Games;
         SelectedGame = Games.FirstOrDefault();
-        _macroDispatcher = new MacroDispatcherService(Games);
+
+        var settings = persistence.LoadSettings();
+        RunOnStartup = settings.RunOnStartup;
+        KeyHooksEnabled = settings.KeyHooksEnabled;
     }
 
     // Tracked with a counter (not a bool) so moving focus directly between two macro
@@ -120,6 +87,8 @@ public partial class MainViewModel : BaseViewModel
         var game = new Game { Name = $"New Game {Games.Count + 1}" };
         Games.Add(game);
         SelectedGame = game;
+
+        _gameLibrary.Save();
     }
 
     [RelayCommand(CanExecute = nameof(CanAddMacro))]
@@ -128,19 +97,36 @@ public partial class MainViewModel : BaseViewModel
         if (SelectedGame == null) return;
 
         SelectedGame.Macros.Add(new Macro { Name = $"New Macro {SelectedGame.Macros.Count + 1}" });
+
+        _gameLibrary.Save();
     }
 
     private bool CanAddMacro() => SelectedGame != null;
 
-    public void DeleteGame(Game game)
+    [RelayCommand]
+    private void DeleteMacro(Macro macro)
+    {
+        macro.KeyBind.CancelRebind();
+        SelectedGame?.Macros.Remove(macro);
+
+        _gameLibrary.Save();
+    }
+
+    [RelayCommand]
+    private void DeleteGame(Game game)
     {
         var index = Games.IndexOf(game);
         if (index < 0) return;
+
+        foreach (var macro in game.Macros)
+            macro.KeyBind.CancelRebind();
 
         Games.Remove(game);
 
         if (SelectedGame == game)
             SelectedGame = Games.Count > 0 ? Games[Math.Min(index, Games.Count - 1)] : null;
+
+        _gameLibrary.Save();
     }
 
     partial void OnSelectedGameChanged(Game? value)
@@ -154,22 +140,37 @@ public partial class MainViewModel : BaseViewModel
             _macroDispatcher.Start();
         else
             _macroDispatcher.Stop();
+
+        _persistence.SaveSettings(new AppSettingsRecord { RunOnStartup = RunOnStartup, KeyHooksEnabled = value });
+    }
+
+    partial void OnRunOnStartupChanged(bool value)
+    {
+        // Persisted, but doesn't yet register/unregister an actual Windows startup entry.
+        _persistence.SaveSettings(new AppSettingsRecord { RunOnStartup = value, KeyHooksEnabled = KeyHooksEnabled });
     }
 
     protected override void OnActivated()
     {
         base.OnActivated();
 
-        if (KeyHooksEnabled)
-            _macroDispatcher.Start();
+        // Activated fires on every focus change (e.g. alt-tab back), not just first launch.
+        // Only start the dispatcher once here; KeyHooksEnabled owns it after that.
+        if (!_hasActivatedOnce)
+        {
+            _hasActivatedOnce = true;
+            if (KeyHooksEnabled)
+                _macroDispatcher.Start();
+        }
 
-        Status = "Ready on Activate";
+        Status = "Ready";
     }
 
     protected override void OnClosed()
     {
         base.OnClosed();
         _macroDispatcher.Stop();
+        _gameLibrary.Save();
     }
 
     protected override void OnVisibilityChanged()
