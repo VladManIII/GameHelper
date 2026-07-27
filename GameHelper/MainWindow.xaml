@@ -31,19 +31,48 @@
         <Grid Padding="16">
             <Grid x:Name="gamesPanel" Visibility="Visible">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="220" />
+                    <ColumnDefinition Width="180" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Spacing="8">
-                    <TextBlock
-                        FontSize="18"
-                        FontWeight="SemiBold"
-                        Text="Games" />
-                    <ListView
-                        DisplayMemberPath="Name"
-                        ItemsSource="{x:Bind VievModel.Games}"
-                        SelectedItem="{x:Bind VievModel.SelectedGame, Mode=TwoWay}" />
+                    <StackPanel
+                        HorizontalAlignment="Stretch"
+                        Orientation="Horizontal"
+                        Spacing="10">
+                        <TextBlock
+                            VerticalAlignment="Center"
+                            FontSize="18"
+                            FontWeight="SemiBold"
+                            Text="Games" />
+
+                        <Button
+                            Width="42"
+                            Height="32"
+                            VerticalAlignment="Center"
+                            Command="{x:Bind VievModel.AddGameCommand}"
+                            Content="+" />
+                    </StackPanel>
+
+                    <ListView ItemsSource="{x:Bind VievModel.Games}" SelectedItem="{x:Bind VievModel.SelectedGame, Mode=TwoWay}">
+                        <ListView.ItemTemplate>
+                            <DataTemplate x:DataType="models:Game">
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <TextBlock
+                                        Width="100"
+                                        VerticalAlignment="Center"
+                                        Text="{x:Bind Name, Mode=OneWay}" />
+
+                                    <Button
+                                        Width="42"
+                                        Height="32"
+                                        HorizontalContentAlignment="Center"
+                                        Click="DeleteGame_Click"
+                                        Content="🗑" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
                 </StackPanel>
 
                 <StackPanel
@@ -56,28 +85,58 @@
                         HorizontalAlignment="Stretch"
                         Orientation="Horizontal"
                         Spacing="15">
-                        <TextBlock
+                        <TextBox
+                            Width="200"
                             VerticalAlignment="Center"
                             FontSize="18"
                             FontWeight="SemiBold"
-                            Text="{x:Bind VievModel.SelectedGame.Name, Mode=OneWay}" />
+                            GotFocus="MacroField_GotFocus"
+                            LostFocus="MacroField_LostFocus"
+                            PlaceholderText="Game name"
+                            Text="{x:Bind VievModel.SelectedGame.Name, Mode=TwoWay}" />
 
                         <ToggleSwitch
                             VerticalAlignment="Center"
                             FontSize="18"
                             FontWeight="SemiBold"
                             IsOn="{x:Bind VievModel.SelectedGame.isActive, Mode=TwoWay}" />
+
+                        <Button
+                            Width="42"
+                            Height="32"
+                            VerticalAlignment="Center"
+                            Command="{x:Bind VievModel.AddMacroCommand}"
+                            Content="+" />
                     </StackPanel>
 
                     <ListView ItemsSource="{x:Bind VievModel.SelectedGame.Macros, Mode=OneWay}">
                         <ListView.ItemTemplate>
                             <DataTemplate x:DataType="models:Macro">
                                 <StackPanel Orientation="Horizontal" Spacing="12">
-                                    <TextBlock Opacity="0.7" Text="{x:Bind KeyBind}" />
+                                    <Button
+                                        Width="120"
+                                        Command="{x:Bind KeyBind.RebindCommand}"
+                                        Content="{x:Bind KeyBind.DisplayName, Mode=OneWay}" />
 
-                                    <TextBlock Width="160" Text="{x:Bind Macros}" />
+                                    <TextBox
+                                        Width="160"
+                                        GotFocus="MacroField_GotFocus"
+                                        LostFocus="MacroField_LostFocus"
+                                        PlaceholderText="Macro sequence"
+                                        Text="{x:Bind Macros, Mode=TwoWay}" />
 
-                                    <TextBlock Width="160" Text="{x:Bind Name}" />
+                                    <TextBox
+                                        Width="160"
+                                        GotFocus="MacroField_GotFocus"
+                                        LostFocus="MacroField_LostFocus"
+                                        PlaceholderText="Macro name"
+                                        Text="{x:Bind Name, Mode=TwoWay}" />
+
+                                    <Button
+                                        Width="42"
+                                        Height="32"
+                                        Click="DeleteMacro_Click"
+                                        Content="🗑" />
                                 </StackPanel>
                             </DataTemplate>
                         </ListView.ItemTemplate>

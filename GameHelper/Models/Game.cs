@@ -1,10 +1,13 @@
+using CommunityToolkit.Mvvm.ComponentModel;
 using System.Collections.ObjectModel;
 
 namespace GameHelper.Models;
 
-public class Game
+public partial class Game : ObservableObject
 {
-    public string Name { get; set; } = string.Empty;
+    [ObservableProperty]
+    public partial string Name { get; set; } = string.Empty;
+
     public bool isActive { get; set; } = true;
     public ObservableCollection<Macro> Macros { get; set; } = new();
 }
